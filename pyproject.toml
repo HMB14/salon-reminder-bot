@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "salon-reminder-bot"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = ["click>=8.0", "rich>=13.0"]
+
+[project.scripts]
+salon = "salon.cli:cli"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["salon*"]
