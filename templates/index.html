@@ -35,6 +35,38 @@
       font-size: 0.95rem;
     }
 
+    /* Language toggle */
+    .lang-toggle {
+      display: flex;
+      gap: 0;
+      border: 2px solid #8b4f6e;
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 0 auto 1.5rem;
+      width: fit-content;
+    }
+
+    .lang-toggle button {
+      margin: 0;
+      width: auto;
+      padding: 0.45rem 1.2rem;
+      border-radius: 0;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      background: transparent;
+      color: #8b4f6e;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .lang-toggle button.active {
+      background: #8b4f6e;
+      color: #fff;
+    }
+
+    .lang-toggle button:hover:not(.active) { background: #f3e6ee; }
+
     .card {
       background: #fff;
       border-radius: 12px;
@@ -159,77 +191,175 @@
 <body>
   <header>
     <h1>💇 Salon Reminder Bot</h1>
-    <p>Generate bilingual appointment reminders (Arabic + English)</p>
+    <p id="header-sub">Generate bilingual appointment reminders (Arabic + English)</p>
   </header>
 
+  <div class="lang-toggle">
+    <button id="btn-en" class="active" onclick="setLang('en')">English</button>
+    <button id="btn-ar" onclick="setLang('ar')">العربية</button>
+  </div>
+
   <div class="card">
-    <h2>Appointment Details</h2>
-    <form method="post" autocomplete="off">
+    <h2 id="card-title">Appointment Details</h2>
+    <form method="post" autocomplete="off" id="appt-form">
       <div class="form-grid">
         <div>
-          <label for="name">Client Name</label>
+          <label for="name" id="lbl-name">Client Name</label>
           <input id="name" name="name" type="text" placeholder="Sara Al-Rashidi" required
                  value="{{ request.form.get('name', '') }}">
         </div>
         <div>
-          <label for="phone">Phone</label>
+          <label for="phone" id="lbl-phone">Phone</label>
           <input id="phone" name="phone" type="tel" placeholder="+966 50 123 4567" required
                  value="{{ request.form.get('phone', '') }}">
         </div>
         <div>
-          <label for="service">Service</label>
+          <label for="service" id="lbl-service">Service</label>
           <input id="service" name="service" type="text" placeholder="Haircut & Blowdry" required
                  value="{{ request.form.get('service', '') }}">
         </div>
         <div>
-          <label for="appointment_time">Appointment Time</label>
+          <label for="appointment_time" id="lbl-time">Appointment Time</label>
           <input id="appointment_time" name="appointment_time" type="datetime-local" required
                  value="{{ request.form.get('appointment_time', '') }}">
         </div>
         <div>
-          <label for="stylist">Stylist (optional)</label>
+          <label for="stylist" id="lbl-stylist">Stylist (optional)</label>
           <input id="stylist" name="stylist" type="text" placeholder="Nour"
                  value="{{ request.form.get('stylist', '') }}">
         </div>
         <div>
-          <label for="branch">Branch (optional)</label>
+          <label for="branch" id="lbl-branch">Branch (optional)</label>
           <input id="branch" name="branch" type="text" placeholder="Riyadh - Olaya"
                  value="{{ request.form.get('branch', '') }}">
         </div>
       </div>
-      <button type="submit">Generate Reminder</button>
+      <button type="submit" id="btn-submit">Generate Reminder</button>
     </form>
 
     {% if error %}
-    <div class="error">Error: {{ error }}</div>
+    <div class="error">{{ error }}</div>
     {% endif %}
   </div>
 
   {% if en_msg and ar_msg %}
   <div class="card">
-    <h2>Reminder Messages</h2>
+    <h2 id="result-title">Reminder Message</h2>
     <div class="messages">
-      <div class="msg-block">
+      <div class="msg-block" id="block-en">
         <h3>English</h3>
         <pre id="en-msg">{{ en_msg }}</pre>
         <button class="copy-btn" onclick="copyText('en-msg', this)">Copy</button>
       </div>
-      <div class="msg-block" dir="rtl">
+      <div class="msg-block" id="block-ar" dir="rtl">
         <h3>العربية</h3>
         <pre id="ar-msg">{{ ar_msg }}</pre>
-        <button class="copy-btn" onclick="copyText('ar-msg', this)" style="float:left">Copy</button>
+        <button class="copy-btn" onclick="copyText('ar-msg', this)" style="float:left">نسخ</button>
       </div>
     </div>
   </div>
   {% endif %}
 
   <script>
+    const strings = {
+      en: {
+        headerSub:   "Generate bilingual appointment reminders (Arabic + English)",
+        cardTitle:   "Appointment Details",
+        resultTitle: "Reminder Message",
+        name:        "Client Name",
+        phone:       "Phone",
+        service:     "Service",
+        time:        "Appointment Time",
+        stylist:     "Stylist (optional)",
+        branch:      "Branch (optional)",
+        submit:      "Generate Reminder",
+        phName:      "Sara Al-Rashidi",
+        phPhone:     "+966 50 123 4567",
+        phService:   "Haircut & Blowdry",
+        phStylist:   "Nour",
+        phBranch:    "Riyadh - Olaya",
+        copy:        "Copy",
+        copied:      "Copied!",
+      },
+      ar: {
+        headerSub:   "توليد رسائل تذكير بالمواعيد (عربي + إنجليزي)",
+        cardTitle:   "تفاصيل الموعد",
+        resultTitle: "رسالة التذكير",
+        name:        "اسم العميلة",
+        phone:       "رقم الهاتف",
+        service:     "الخدمة",
+        time:        "وقت الموعد",
+        stylist:     "المصففة (اختياري)",
+        branch:      "الفرع (اختياري)",
+        submit:      "توليد التذكير",
+        phName:      "سارة الراشدي",
+        phPhone:     "‎+966 50 123 4567",
+        phService:   "قص وتمشيط",
+        phStylist:   "نور",
+        phBranch:    "الرياض - العليا",
+        copy:        "نسخ",
+        copied:      "تم النسخ!",
+      },
+    };
+
+    let currentLang = "en";
+
+    function setLang(lang) {
+      currentLang = lang;
+      const s = strings[lang];
+      const isAr = lang === "ar";
+
+      // toggle buttons
+      document.getElementById("btn-en").classList.toggle("active", !isAr);
+      document.getElementById("btn-ar").classList.toggle("active", isAr);
+
+      // html dir + lang
+      document.documentElement.lang = lang;
+      document.documentElement.dir = isAr ? "rtl" : "ltr";
+
+      // form card direction
+      document.getElementById("appt-form").dir = isAr ? "rtl" : "ltr";
+
+      // text content
+      document.getElementById("header-sub").textContent  = s.headerSub;
+      document.getElementById("card-title").textContent  = s.cardTitle;
+      document.getElementById("lbl-name").textContent    = s.name;
+      document.getElementById("lbl-phone").textContent   = s.phone;
+      document.getElementById("lbl-service").textContent = s.service;
+      document.getElementById("lbl-time").textContent    = s.time;
+      document.getElementById("lbl-stylist").textContent = s.stylist;
+      document.getElementById("lbl-branch").textContent  = s.branch;
+      document.getElementById("btn-submit").textContent  = s.submit;
+
+      // placeholders
+      document.getElementById("name").placeholder    = s.phName;
+      document.getElementById("phone").placeholder   = s.phPhone;
+      document.getElementById("service").placeholder = s.phService;
+      document.getElementById("stylist").placeholder = s.phStylist;
+      document.getElementById("branch").placeholder  = s.phBranch;
+
+      // result card
+      const resultTitle = document.getElementById("result-title");
+      if (resultTitle) resultTitle.textContent = s.resultTitle;
+
+      const blockEn = document.getElementById("block-en");
+      const blockAr = document.getElementById("block-ar");
+      if (blockEn && blockAr) {
+        blockEn.style.display = isAr ? "none" : "block";
+        blockAr.style.display = isAr ? "block" : "none";
+      }
+    }
+
     function copyText(id, btn) {
+      const s = strings[currentLang];
       navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
-        btn.textContent = "Copied!";
-        setTimeout(() => btn.textContent = "Copy", 1500);
+        btn.textContent = s.copied;
+        setTimeout(() => btn.textContent = s.copy, 1500);
       });
     }
+
+    // Apply lang on page load if result is already shown (after form POST)
+    // Default stays "en" — no action needed.
   </script>
 </body>
 </html>
