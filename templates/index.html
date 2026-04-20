@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salon Reminder Bot</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f9f5f2;
+      color: #2d2d2d;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #8b4f6e;
+    }
+
+    header p {
+      color: #6b6b6b;
+      margin-top: 0.3rem;
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 2rem;
+      width: 100%;
+      max-width: 560px;
+    }
+
+    .card + .card { margin-top: 1.5rem; }
+
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1.2rem;
+      color: #8b4f6e;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .form-grid .full { grid-column: 1 / -1; }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 0.3rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border: 1.5px solid #ddd;
+      border-radius: 7px;
+      font-size: 0.95rem;
+      transition: border-color 0.15s;
+      background: #fafafa;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #8b4f6e;
+      background: #fff;
+    }
+
+    button {
+      margin-top: 1.4rem;
+      width: 100%;
+      padding: 0.75rem;
+      background: #8b4f6e;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    button:hover { background: #73405b; }
+
+    .error {
+      background: #fff0f0;
+      border: 1px solid #f5b8b8;
+      color: #c0392b;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
+      margin-top: 1rem;
+    }
+
+    .messages { display: flex; flex-direction: column; gap: 1.2rem; }
+
+    .msg-block { position: relative; }
+
+    .msg-block h3 {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #8b4f6e;
+      margin-bottom: 0.5rem;
+    }
+
+    .msg-block pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: inherit;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      background: #f9f5f2;
+      border-radius: 8px;
+      padding: 1rem;
+      border: 1px solid #eddde6;
+    }
+
+    .msg-block[dir="rtl"] pre { text-align: right; }
+
+    .copy-btn {
+      margin-top: 0.5rem;
+      width: auto;
+      padding: 0.35rem 0.9rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      background: transparent;
+      color: #8b4f6e;
+      border: 1.5px solid #8b4f6e;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .copy-btn:hover { background: #8b4f6e; color: #fff; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>💇 Salon Reminder Bot</h1>
+    <p>Generate bilingual appointment reminders (Arabic + English)</p>
+  </header>
+
+  <div class="card">
+    <h2>Appointment Details</h2>
+    <form method="post" autocomplete="off">
+      <div class="form-grid">
+        <div>
+          <label for="name">Client Name</label>
+          <input id="name" name="name" type="text" placeholder="Sara Al-Rashidi" required
+                 value="{{ request.form.get('name', '') }}">
+        </div>
+        <div>
+          <label for="phone">Phone</label>
+          <input id="phone" name="phone" type="tel" placeholder="+966 50 123 4567" required
+                 value="{{ request.form.get('phone', '') }}">
+        </div>
+        <div>
+          <label for="service">Service</label>
+          <input id="service" name="service" type="text" placeholder="Haircut & Blowdry" required
+                 value="{{ request.form.get('service', '') }}">
+        </div>
+        <div>
+          <label for="appointment_time">Appointment Time</label>
+          <input id="appointment_time" name="appointment_time" type="datetime-local" required
+                 value="{{ request.form.get('appointment_time', '') }}">
+        </div>
+        <div>
+          <label for="stylist">Stylist (optional)</label>
+          <input id="stylist" name="stylist" type="text" placeholder="Nour"
+                 value="{{ request.form.get('stylist', '') }}">
+        </div>
+        <div>
+          <label for="branch">Branch (optional)</label>
+          <input id="branch" name="branch" type="text" placeholder="Riyadh - Olaya"
+                 value="{{ request.form.get('branch', '') }}">
+        </div>
+      </div>
+      <button type="submit">Generate Reminder</button>
+    </form>
+
+    {% if error %}
+    <div class="error">Error: {{ error }}</div>
+    {% endif %}
+  </div>
+
+  {% if en_msg and ar_msg %}
+  <div class="card">
+    <h2>Reminder Messages</h2>
+    <div class="messages">
+      <div class="msg-block">
+        <h3>English</h3>
+        <pre id="en-msg">{{ en_msg }}</pre>
+        <button class="copy-btn" onclick="copyText('en-msg', this)">Copy</button>
+      </div>
+      <div class="msg-block" dir="rtl">
+        <h3>العربية</h3>
+        <pre id="ar-msg">{{ ar_msg }}</pre>
+        <button class="copy-btn" onclick="copyText('ar-msg', this)" style="float:left">Copy</button>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <script>
+    function copyText(id, btn) {
+      navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
+        btn.textContent = "Copied!";
+        setTimeout(() => btn.textContent = "Copy", 1500);
+      });
+    }
+  </script>
+</body>
+</html>
