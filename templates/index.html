@@ -202,6 +202,7 @@
   <div class="card">
     <h2 id="card-title">Appointment Details</h2>
     <form method="post" autocomplete="off" id="appt-form">
+      <input type="hidden" id="lang-input" name="lang" value="{{ request.form.get('lang', 'en') }}">
       <div class="form-grid">
         <div>
           <label for="name" id="lbl-name">Client Name</label>
@@ -309,6 +310,9 @@
       const s = strings[lang];
       const isAr = lang === "ar";
 
+      // persist selection across POST
+      document.getElementById("lang-input").value = lang;
+
       // toggle buttons
       document.getElementById("btn-en").classList.toggle("active", !isAr);
       document.getElementById("btn-ar").classList.toggle("active", isAr);
@@ -358,8 +362,8 @@
       });
     }
 
-    // Apply lang on page load if result is already shown (after form POST)
-    // Default stays "en" — no action needed.
+    // Restore language on page load (after form POST)
+    setLang(document.getElementById("lang-input").value);
   </script>
 </body>
 </html>
